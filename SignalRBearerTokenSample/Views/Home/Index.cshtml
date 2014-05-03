@@ -54,7 +54,7 @@
             clearTokenCookie();
 
             function clearTokenCookie() {
-                document.cookie = "BearerToken=; expires=" + new Date(0).toUTCString() + ";";
+                document.cookie = "BearerToken=empty; path=/; expires=" + new Date(0).toUTCString();
             }
 
             self.useBearerToken = function(token) {
@@ -70,7 +70,7 @@
 
             function setTokenCookie() {
                 if (bearerToken)
-                    document.cookie = "BearerToken=" + bearerToken;
+                    document.cookie = "BearerToken=" + bearerToken + "; path=/";
             }
 
 
@@ -150,7 +150,7 @@
                     if (xhr.status == 400) {
                         toastr.error("Invalid user name or password");
                     } else {
-                        toastr.error("Unexpected error while logging in");
+                        toastr.error("Unexpected error while signing in");
                     }
                 });
         }
