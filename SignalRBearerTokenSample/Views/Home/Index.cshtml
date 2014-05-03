@@ -1,0 +1,160 @@
+﻿
+<div class="row" id="signInFormWrapper">
+    <div class="col-md-4">
+        <form id="signInForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="username">User name</label>
+                </div>
+                <div class="col-md-6">
+                    <input id="username" name="username" type="text" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="password">Password</label>
+                </div>
+                <div class="col-md-6">
+                    <input id="password" name="password" type="password" />
+                </div>
+            </div>
+            <div class="row">
+                <input type="submit" value="Sign in"/>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <ul id="messages"></ul>
+    </div>
+</div>
+
+<div class="row" id="newMessageContainer" style="display: none">
+    <div class="col-md-12">
+        <input id="newMessage" type="text" />
+    </div>
+</div>
+
+
+@section scripts {
+    <script src="/signalr/hubs"></script>
+    
+    <script type="text/javascript">
+
+        var ChatHubWrapper = function() {
+            var self = this;
+            var bearerToken = null;
+            var chat = null;
+            var isStarted = false;
+            var onMessageCallback = function() {};
+
+            // clear token cookie when page is reloaded
+            clearTokenCookie();
+
+            function clearTokenCookie() {
+                document.cookie = "BearerToken=; expires=" + new Date(0).toUTCString() + ";";
+            }
+
+            self.useBearerToken = function(token) {
+                bearerToken = token;
+                setTokenCookie();
+
+                if (isStarted) {
+                    // restart, so that connection is assigned to correct group
+                    self.stop();
+                    self.start();
+                }
+            };
+
+            function setTokenCookie() {
+                if (bearerToken)
+                    document.cookie = "BearerToken=" + bearerToken;
+            }
+
+
+            self.start = function() {
+                chat = $.connection.chatHub;
+                chat.client.onMessage = onMessageCallback;
+                return $.connection.hub.start()
+                    .done(function() { isStarted = true; });
+
+            };
+
+            self.stop = function() {
+                isStarted = false;
+                chat = null;
+                $.connection.hub.stop();
+            };
+
+            self.sendMessage = function(message) {
+                if (isStarted) {
+                    chat.server.sendMessage(message);
+                };
+            };
+
+            self.onMessage = function(callback) {
+                onMessageCallback = callback;
+                if (isStarted)
+                    chat.client.onMessage = onMessageCallback();
+            };
+
+        };
+
+        var chatHub = new ChatHubWrapper();
+
+        $(document).ready(function() {
+            chatHub.onMessage(appendMessage);
+            chatHub.start().done(function() {
+                toastr.success("Connected to the hub");
+            });
+
+            $("#signInForm").submit(onSignInFromSubmit);
+            $("#newMessage").keypress(onNewMessageKeyPress);
+        });
+
+        function appendMessage(userName, message) {
+            var newMessageSpan = $("<li>").text(userName + ": " + message);
+            newMessageSpan.appendTo("#messages");
+        }
+
+        function onSignInFromSubmit(e) {
+            e.preventDefault();
+
+            var userName = $("#username").val();
+            var password = $("#password").val();
+            signIn(userName, password).done(function() {
+                $("#signInForm").slideUp();
+                $("#newMessageContainer").slideDown();
+            });
+        }
+
+        function onNewMessageKeyPress(e) {
+              if (e.which == 13) {
+                  e.preventDefault();
+                  chatHub.sendMessage($("#newMessage").val());
+                  $("#newMessage").val("");
+              }
+        };
+
+        function signIn(userName, password) {
+            return $.post("/token", { grant_type: "password", username: userName, password: password })
+                .done(function(data) {
+                    if (data && data.access_token) {
+                        chatHub.useBearerToken(data.access_token);
+                        toastr.success("Login successful");
+                    }
+                })
+                .fail(function(xhr) {
+                    if (xhr.status == 400) {
+                        toastr.error("Invalid user name or password");
+                    } else {
+                        toastr.error("Unexpected error while logging in");
+                    }
+                });
+        }
+
+
+    </script>
+}
