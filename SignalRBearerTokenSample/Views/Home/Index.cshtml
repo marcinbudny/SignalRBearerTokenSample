@@ -19,7 +19,9 @@
                 </div>
             </div>
             <div class="row">
-                <input type="submit" value="Sign in"/>
+                <div class="col-md-12">
+                    <input type="submit" value="Sign in" />
+                </div>
             </div>
         </form>
     </div>
@@ -127,6 +129,7 @@
             signIn(userName, password).done(function() {
                 $("#signInForm").slideUp();
                 $("#newMessageContainer").slideDown();
+                $("#newMessage").focus();
             });
         }
 

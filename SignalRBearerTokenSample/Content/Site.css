@@ -40,3 +40,39 @@ input[type="checkbox"].input-validation-error {
 .validation-summary-valid {
     display: none;
 }
+
+#newMessage {
+    width: 100%;
+    max-width: none;
+}
+
+#messages {
+    margin-top: 1em;
+    padding-left: 0;
+}
+
+#messages li {
+    list-style: none;
+    margin-bottom: 0.2em;
+}
+
+#signInForm input[type='text'], #signInForm input[type='password'] {
+    width: 100%;
+    max-width: none;
+}
+
+#signInForm div.row:first-child {
+    margin-top: 1em;
+}
+
+#signInForm div.row {
+    margin-bottom: 0.5em;
+}
+
+#signInForm div.row:last-child {
+    text-align: right;
+}
+
+#newMessageContainer {
+    margin-top: 1em;
+}
