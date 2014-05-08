@@ -52,30 +52,6 @@
             var isStarted = false;
             var onMessageCallback = function() {};
 
-            // clear token cookie when page is reloaded
-            clearTokenCookie();
-
-            function clearTokenCookie() {
-                document.cookie = "BearerToken=empty; path=/; expires=" + new Date(0).toUTCString();
-            }
-
-            self.useBearerToken = function(token) {
-                bearerToken = token;
-                setTokenCookie();
-
-                if (isStarted) {
-                    // restart, so that connection is assigned to correct group
-                    self.stop();
-                    self.start();
-                }
-            };
-
-            function setTokenCookie() {
-                if (bearerToken)
-                    document.cookie = "BearerToken=" + bearerToken + "; path=/";
-            }
-
-
             self.start = function() {
                 chat = $.connection.chatHub;
                 chat.client.onMessage = onMessageCallback;
@@ -87,7 +63,7 @@
             self.stop = function() {
                 isStarted = false;
                 chat = null;
-                $.connection.hub.stop();
+                return $.connection.hub.stop();
             };
 
             self.sendMessage = function(message) {
@@ -102,9 +78,35 @@
                     chat.client.onMessage = onMessageCallback();
             };
 
+
+            self.useBearerToken = function (token) {
+                var wasStarted = isStarted;
+
+                if (isStarted)
+                    // restart, so that connection is assigned to correct group
+                    self.stop();
+
+                bearerToken = token;
+                setTokenCookie();
+
+                if (wasStarted)
+                    self.start();
+            };
+
+            function setTokenCookie() {
+                if (bearerToken)
+                    document.cookie = "BearerToken=" + bearerToken + "; path=/";
+            }
+
+            self.clearAuthentication = function () {
+                document.cookie = "BearerToken=; path=/; expires=" + new Date(0).toUTCString();
+            }
+
         };
 
         var chatHub = new ChatHubWrapper();
+        // clear token cookie when page reloads
+        chatHub.clearAuthentication();
 
         $(document).ready(function() {
             chatHub.onMessage(appendMessage);
@@ -134,11 +136,11 @@
         }
 
         function onNewMessageKeyPress(e) {
-              if (e.which == 13) {
-                  e.preventDefault();
-                  chatHub.sendMessage($("#newMessage").val());
-                  $("#newMessage").val("");
-              }
+            if (e.which == 13) {
+                e.preventDefault();
+                chatHub.sendMessage($("#newMessage").val());
+                $("#newMessage").val("");
+            }
         };
 
         function signIn(userName, password) {
