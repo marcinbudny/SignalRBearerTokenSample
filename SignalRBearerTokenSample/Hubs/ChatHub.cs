@@ -46,11 +46,9 @@ namespace SignalRBearerTokenSample.Hubs
             Groups.Remove(Context.ConnectionId, "anonymous");
         }
 
+        [Authorize]
         public void SendMessage(string message)
         {
-            if(!Context.User.Identity.IsAuthenticated)
-                return;
-
             if(string.IsNullOrEmpty(message))
                 return;
 
