@@ -47,7 +47,6 @@
 
         var ChatHubWrapper = function() {
             var self = this;
-            var bearerToken = null;
             var chat = null;
             var isStarted = false;
             var onMessageCallback = function() {};
@@ -86,16 +85,15 @@
                     // restart, so that connection is assigned to correct group
                     self.stop();
 
-                bearerToken = token;
-                setTokenCookie();
+                setTokenCookie(token);
 
                 if (wasStarted)
                     self.start();
             };
 
-            function setTokenCookie() {
-                if (bearerToken)
-                    document.cookie = "BearerToken=" + bearerToken + "; path=/";
+            function setTokenCookie(token) {
+                if (token)
+                    document.cookie = "BearerToken=" + token + "; path=/";
             }
 
             self.clearAuthentication = function () {
