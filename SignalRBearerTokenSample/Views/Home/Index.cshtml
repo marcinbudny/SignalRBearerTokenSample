@@ -75,7 +75,7 @@
             self.onMessage = function(callback) {
                 onMessageCallback = callback;
                 if (isStarted)
-                    chat.client.onMessage = onMessageCallback();
+                    chat.client.onMessage = onMessageCallback;
             };
 
 
