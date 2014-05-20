@@ -1,4 +1,9 @@
 ﻿
+<div class="row">
+    <div class="col-md-10"></div>
+    <div class="col-md-2"><a id="callApi" href="#">Who am I?</a></div>
+</div>
+
 <div class="row" id="signInFormWrapper">
     <div class="col-md-4">
         <form id="signInForm">
@@ -78,11 +83,11 @@
             };
 
 
-            self.useBearerToken = function (token) {
+            self.useBearerToken = function(token) {
                 var wasStarted = isStarted;
 
                 if (isStarted)
-                    // restart, so that connection is assigned to correct group
+                // restart, so that connection is assigned to correct group
                     self.stop();
 
                 setTokenCookie(token);
@@ -96,7 +101,7 @@
                     document.cookie = "BearerToken=" + token + "; path=/";
             }
 
-            self.clearAuthentication = function () {
+            self.clearAuthentication = function() {
                 document.cookie = "BearerToken=; path=/; expires=" + new Date(0).toUTCString();
             }
 
@@ -114,6 +119,7 @@
 
             $("#signInForm").submit(onSignInFromSubmit);
             $("#newMessage").keypress(onNewMessageKeyPress);
+            $("#callApi").click(getUserInformation);
         });
 
         function appendMessage(userName, message) {
@@ -146,6 +152,7 @@
                 .done(function(data) {
                     if (data && data.access_token) {
                         chatHub.useBearerToken(data.access_token);
+                        bearerToken = data.access_token;
                         toastr.success("Login successful");
                     }
                 })
@@ -156,6 +163,37 @@
                         toastr.error("Unexpected error while signing in");
                     }
                 });
+        }
+
+        // example of WebAPI call using bearer token
+        var bearerToken = null;
+
+        function getUserInformation() {
+
+            // version 1: use the same cookie SignalR is using
+            var promise = $.get("/api/whoami");
+
+            // version 2: use explicit Authorization header
+            //var cookieTempStorage = null;
+            //var promise = $.ajax({
+            //    url: "/api/whoami",
+            //    beforeSend: function (xhr) {
+            //        // to demonstrate this works without a cookie, we need to clear cookies before call
+            //        cookieTempStorage = document.cookie;
+            //        chatHub.clearAuthentication();
+
+            //        if (bearerToken)
+            //            xhr.setRequestHeader("Authorization", "Bearer " + bearerToken);
+            //    }
+            //})
+            //.always(function() {
+            //    // restore cookies
+            //    document.cookie = cookieTempStorage;
+            //});
+
+            promise.success(function(userName) {
+                alert("You are " + userName);
+            });
         }
 
 
