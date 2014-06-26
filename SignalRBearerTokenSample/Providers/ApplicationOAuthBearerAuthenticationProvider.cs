@@ -11,21 +11,6 @@ namespace SignalRBearerTokenSample.Providers
     public class ApplicationOAuthBearerAuthenticationProvider 
         : OAuthBearerAuthenticationProvider
     {
-        // method copied from Owin.AppBuilderExtensions.ApplicationOAuthBearerProvider (private class)
-        public override Task ValidateIdentity(OAuthValidateIdentityContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-            if (context.Ticket.Identity.Claims
-                .Any(c => c.Issuer != ClaimsIdentity.DefaultIssuer))
-            {
-                context.Rejected();
-            }
-            return Task.FromResult<object>(null);
-        }
-
         public override Task RequestToken(OAuthRequestTokenContext context)
         {
             if (context == null) throw new ArgumentNullException("context");
